@@ -77,8 +77,6 @@ Future Enhancements
     Advanced Search: Implement advanced search filters for message history.
 
 
-
-
     
 ## Author
 
