@@ -22,11 +22,9 @@ The Socket Chat Application is a real-time messaging platform designed to provid
 
     Reply to Messages
         Message Threads: Users can reply to specific messages, creating a thread for easy conversation tracking.
-        Quoting Messages: Highlight the original message within replies for better context.
 
     Delete Messages
         Message Deletion: Users can delete their own messages.
-        Undo Deletion: Option to undo the deletion within a limited time frame.
 
     User Interface
         Intuitive Design: A user-friendly interface with easy navigation.
@@ -35,12 +33,12 @@ The Socket Chat Application is a real-time messaging platform designed to provid
 
 # Technical Stack
 
-    Frontend: HTML, CSS, JavaScript (React.js or Vue.js)
+    Frontend: HTML, CSS, JavaScript (React.js)
     Backend: Node.js with Express.js
     Database: MongoDB or MySQL for storing user data and message history
     Sockets: Socket.io for real-time communication
     Authentication: JWT (JSON Web Tokens) for secure authentication
-    UI Framework: Tailwind CSS or Bootstrap for styling
+    UI Framework: Tailwind CSS for styling
 
 # Project Phases
 
@@ -58,11 +56,10 @@ The Socket Chat Application is a real-time messaging platform designed to provid
     Testing
         Unit testing for individual components
         Integration testing for overall system functionality
-        User acceptance testing (UAT)
 
     Deployment
         Preparing the production environment
-        Deploying the application on a cloud server (e.g., AWS, Heroku)
+        Deploying the application on a cloud server (Render, Netlify)
         Ensuring scalability and performance optimization
 
     Maintenance and Updates
