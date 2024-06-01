@@ -1,7 +1,9 @@
 ## ChatSocketApplication
 
 The Socket Chat Application is a real-time messaging platform designed to provide seamless communication between users. This application leverages socket programming for instant message delivery and ensures a smooth user experience with an intuitive and visually appealing user interface.
-Key Features
+
+
+# Key Features
 
     User Registration and Authentication
         Registration: New users can register by providing their email, username, and password.
@@ -31,7 +33,7 @@ Key Features
         Responsive Layout: Optimized for various devices, including desktops, tablets, and smartphones.
         Customizable Themes: Users can choose from different themes to personalize their chat experience.
 
-Technical Stack
+# Technical Stack
 
     Frontend: HTML, CSS, JavaScript (React.js or Vue.js)
     Backend: Node.js with Express.js
@@ -40,7 +42,7 @@ Technical Stack
     Authentication: JWT (JSON Web Tokens) for secure authentication
     UI Framework: Tailwind CSS or Bootstrap for styling
 
-Project Phases
+# Project Phases
 
     Planning and Design
         Requirement gathering
@@ -73,3 +75,21 @@ Future Enhancements
     File Sharing: Enable users to share files and images within the chat.
     Voice and Video Calls: Integrate voice and video calling features for enhanced communication.
     Advanced Search: Implement advanced search filters for message history.
+
+
+
+
+    
+## Author
+
+- [@ArmanAli](https://www.github.com/armanali0786)
+
+
+## 🚀 About Me
+- 🎓 I am recently completed my **Bachelor's in Information Technology**.
+
+- 🌱 I’m currently learning **Data Structures and Algorithms.**
+
+- 👯 I’m looking to collaborate on **OpenSource Projects**
+
+- 👨‍💻 All of my projects are
