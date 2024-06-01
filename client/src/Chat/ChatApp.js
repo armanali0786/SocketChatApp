@@ -13,6 +13,7 @@ export default function ChatApp() {
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [messageData, setMessageData] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const [roomData, setRoomData] = useState({
     room: null,
@@ -46,6 +47,7 @@ export default function ChatApp() {
     return () => {
       socket.off('connect');
       socket.off('disconnect');
+     
     };
   }, []);
 
@@ -65,23 +67,24 @@ export default function ChatApp() {
         setMessageData((prevState)=> prevState.filter((item)=> item.id !== data.message.id) );
       });
 
+      socketRef.current.on('TYPING', (data) => {
+        setTypingUsers((prev) => [...prev, data]);
+      });
+  
+      socketRef.current.on('STOP_TYPING', (data) => {
+        setTypingUsers((prev) => prev.filter((user) => user.id !== data.id));
+      });
+  
+      socketRef.current.on('USER_JOINED', (data) => {
+        setOnlineUsers(data);
+      });
+  
+      socketRef.current.on('USER_LEFT', (data) => {
+        setOnlineUsers(data);
+      });
       return () => socketRef.current.disconnect();
       
-      // socketRef.current.on('typing', (typing) => {
-      //   console.log('User is typing:', typing);
-      // });
-      // socketRef.current.on('stop typing', (typing) => {
-      //   console.log('User stopped typing:', typing);
-      // });
-      // socketRef.current.on('user joined', (user) => {
-      //   console.log('User joined:', user);
-      // });
-      // socketRef.current.on('user left', (user) => {
-      //   console.log('User left:', user);
-      // });
-      // socketRef.current.on('disconnect', () => {
-      //   console.log('Disconnected from server');
-      // });
+
     }
   },[isConnected]);
   
@@ -115,6 +118,13 @@ export default function ChatApp() {
     });
   }
 
+  const handleTyping = () => {
+    socketRef.current.emit('TYPING', user);
+  };
+
+  const handleStopTyping = () => {
+    socketRef.current.emit('STOP_TYPING', user);
+  };
 
   return (
     <div className='flex'>
@@ -124,6 +134,9 @@ export default function ChatApp() {
        setRoomData={setRoomData}
        roomData={roomData}
        setMessageData={setMessageData}
+       handleTyping={handleTyping}
+       handleStopTyping={handleStopTyping}
+       typingUsers={typingUsers}
        />
       <ChatBox 
       user={user}
@@ -131,6 +144,9 @@ export default function ChatApp() {
       handleSendMessage={handleSendMessage}
       messageData={messageData}
       handleDeleteMessage={handleDeleteMessage}
+      handleTyping={handleTyping}
+      handleStopTyping={handleStopTyping}
+      typingUsers={typingUsers}
        />
     </div>
   )

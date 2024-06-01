@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { IoIosCall, IoMdArrowBack, IoIosVideocam, IoMdSend } from "react-icons/io";
 import { FaVideo } from "react-icons/fa6";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -8,26 +8,58 @@ import { FaMicrophone } from "react-icons/fa";
 import axios from 'axios';
 
 
-export default function ChatBox({ user, roomData, handleSendMessage, messageData, handleDeleteMessage}) {
-
+export default function ChatBox({ user, roomData,
+  handleSendMessage, messageData,
+  handleDeleteMessage, handleTyping, handleStopTyping, typingUsers
+}) {
   const [message, setMessage] = useState('');
+  const typingRef = useRef(false);
+
+  const debounce = (func, delay) => {
+    let debounceTimer;
+    return (...args) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    };
+  };
+
+  const debouncedHandleStopTyping = useCallback(debounce(() => {
+    handleStopTyping();
+    typingRef.current = false;
+  }, 1000), []);
 
   const handleMessageInput = (e) => {
     setMessage(e.target.value);
+    if (e.target.value) {
+      if (!typingRef.current) {
+        handleTyping();
+        typingRef.current = true;
+      }
+      debouncedHandleStopTyping();
+    } else {
+      handleStopTyping();
+      typingRef.current = false;
+    }
   }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message) {
       handleSendMessage(message);
     }
     setMessage('');
+    handleStopTyping();
+    typingRef.current = false;
   }
+
+
+
 
   return (
     <>
       {roomData.room ?
         <>
-          <div className="flex-1 flex flex-col bg-zinc-50">
+          <div className="flex-1 flex flex-col bg-zinc-50 overflow-auto h-screen min-h-[300px]">
             <div className="flex items-center justify-between p-4 bg-white border-b border-zinc-200">
               <div className="flex items-center">
                 <span className='text-xl mr-4 cursor-pointer'><IoMdArrowBack /></span>
@@ -60,7 +92,7 @@ export default function ChatBox({ user, roomData, handleSendMessage, messageData
                 messageData.map((message, index) => (
                   <div
                     key={index}
-                        className={`flex items-start mb-4 ${message.senderId === user.id ? "justify-end" : "justify-start"
+                    className={`flex items-start mb-4 ${message.senderId === user.id ? "justify-end" : "justify-start"
                       }`}
                   >
                     {message.receiverId == user.id && (
@@ -69,10 +101,10 @@ export default function ChatBox({ user, roomData, handleSendMessage, messageData
                       </span>
                     )}
                     <div
-                      className={`p-3 rounded-lg ${message.senderId === user.id ? "bg-zinc-200 ml-auto" : "bg-blue-100"
+                      className={`relative p-3 rounded-lg ${message.senderId === user.id ? "bg-zinc-200 ml-auto" : "bg-blue-100"
                         }`}
                     >
-                      <p>{message.message}</p>
+                      <p className='max-w-[550px]'>{message.message}</p>
                       <div className="flex justify-between mt-1">
                         <div>
                           <span className="text-xs text-zinc-500">3:16 PM</span>
@@ -95,7 +127,11 @@ export default function ChatBox({ user, roomData, handleSendMessage, messageData
                   </div>
                 ))
               }
-
+              {typingUsers.map((typingUser, index) => (
+                <div key={index} className='absolute bottom-24 text-sm text-zinc-500'>
+                  {typingUser.name} is typing...
+                </div>
+              ))}
             </div>
             <form onSubmit={handleSubmit}>
               <div className="p-4 bg-white border-t border-zinc-300">
