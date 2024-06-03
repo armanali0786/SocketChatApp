@@ -77,7 +77,10 @@ Future Enhancements
 
 ## Demo 
 
+Home Chat
 ![Screenshot from 2024-06-03 11-55-07](https://github.com/armanali0786/SocketChatApp/assets/76746226/4a08adf0-96b5-4dd6-b8ed-9d20d3195888)
+
+Emogi
 ![Screenshot from 2024-06-03 16-38-35](https://github.com/armanali0786/SocketChatApp/assets/76746226/5de47296-a158-4e35-bd4b-21734ff0aaeb)
 
 
