@@ -73,6 +73,10 @@ Future Enhancements
     Voice and Video Calls: Integrate voice and video calling features for enhanced communication.
     Advanced Search: Implement advanced search filters for message history.
 
+## Demo 
+
+![Screenshot from 2024-06-03 11-55-07](https://github.com/armanali0786/SocketChatApp/assets/76746226/4a08adf0-96b5-4dd6-b8ed-9d20d3195888)
+
 
     
 ## Author
