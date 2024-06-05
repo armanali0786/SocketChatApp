@@ -20,8 +20,7 @@ The Socket Chat Application is a real-time messaging platform designed to provid
 ## Demo
 
 Home Chat
-
-![Screenshot from 2024-06-03 11-55-07](https://github.com/armanali0786/SocketChatApp/assets/76746226/4a08adf0-96b5-4dd6-b8ed-9d20d3195888)
+![Screenshot from 2024-06-05 12-14-52](https://github.com/armanali0786/SocketChatApp/assets/76746226/11de9847-91e6-4661-a57b-b3ebe4328017)
 
 Emogi Expression:- 
 
