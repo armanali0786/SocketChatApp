@@ -33,6 +33,10 @@ Emogi Expression:-
 
 ![Screenshot from 2024-06-05 13-13-18](https://github.com/armanali0786/SocketChatApp/assets/76746226/3594d283-d058-4b0a-a0c7-ab9ff03c0b2e)
 
+
+[video-calling.webm](https://github.com/armanali0786/SocketChatApp/assets/76746226/59edf6a6-24ab-4284-b87e-bd5269b13814)
+
+
 ## Acknowledgements
 
  - [Nodejs](https://nodejs.org/docs/latest/api/)
