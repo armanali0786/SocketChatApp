@@ -23,6 +23,10 @@ const Message = sequelize.define('Message', {
       key: 'id',
     },
   },
+  replyMessage: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  }
 }, {
   tableName: 'messages',
   timestamps: false,

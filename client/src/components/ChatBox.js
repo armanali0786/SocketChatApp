@@ -1,19 +1,37 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { IoIosCall, IoMdArrowBack, IoIosVideocam, IoMdSend } from "react-icons/io";
 import { FaVideo } from "react-icons/fa6";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { CiUser } from "react-icons/ci";
 import { MdOutlineEmojiEmotions, MdDeleteOutline, MdReply } from "react-icons/md";
 import { FaMicrophone } from "react-icons/fa";
-import axios from 'axios';
+import { ImCross } from "react-icons/im";
+import Bitmoji from '../assets/bitmoji.jpg';
+import Bitmoji1 from '../assets/bitmoji1.jpg';
+import Bitmoji2 from '../assets/bitmoji2.png';
+import chatUser from '../assets/chat.png';
+import { CopyToClipboard } from "react-copy-to-clipboard"
 
+import Peer from 'peerjs';
+
+import EmojiPickers from 'emoji-picker-react';
+import VideoComp from './VideoComp';
 
 export default function ChatBox({ user, roomData,
   handleSendMessage, messageData,
-  handleDeleteMessage, handleTyping, handleStopTyping, typingUsers
+  handleDeleteMessage, handleTyping,
+  handleStopTyping, typingUsers, setReplyMessage, 
+  replyMessage,callUser,stream, callEnded, userVideo,
+   myVideo, callAccepted, receivingCall, answerCall,
+  leaveCall,name, setName, idToCall, me, setMe, setIdToCall
 }) {
   const [message, setMessage] = useState('');
   const typingRef = useRef(false);
+
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+
+
+  const chatContainerRef = useRef(null);
 
   const debounce = (func, delay) => {
     let debounceTimer;
@@ -52,7 +70,34 @@ export default function ChatBox({ user, roomData,
     typingRef.current = false;
   }
 
+  const handleVideoCallUser = () => {
+    setIsPopupVisible(true);
+  }
 
+  const handleEmogi = () => {
+    setShowEmojiPicker(!showEmojiPicker);
+  };
+
+  const handleEmojiSelect = (emojiObject) => {
+    setMessage((prevMessage) => prevMessage + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messageData]);
 
 
   return (
@@ -63,7 +108,7 @@ export default function ChatBox({ user, roomData,
             <div className="flex items-center justify-between p-4 bg-white border-b border-zinc-200">
               <div className="flex items-center">
                 <span className='text-xl mr-4 cursor-pointer'><IoMdArrowBack /></span>
-                <img src="https://placehold.co/40x40" alt="User" className="rounded-full mr-2" />
+                <img src={Bitmoji1} alt="User" className="rounded-full w-10 mr-2" />
                 <div>
                   <p className="font-semibold">{roomData.receiver.name}</p>
                   <p className="text-sm text-zinc-500">Active Now</p>
@@ -71,20 +116,44 @@ export default function ChatBox({ user, roomData,
               </div>
               <div className="flex items-center space-x-4">
                 <button className="p-2 rounded-full hover:bg-zinc-100">
-                  {/* <img src="https://placehold.co/20x20" alt="Search" /> */}
                   <span><IoIosCall /></span>
                 </button>
-                <button className="p-2 rounded-full hover:bg-zinc-100">
-                  {/* <img src="https://placehold.co/20x20" alt="More" /> */}
+                <button className="p-2 rounded-full hover:bg-zinc-100"
+                  onClick={handleVideoCallUser}
+                >
                   <span><FaVideo /></span>
                 </button>
-                <button className="p-2 rounded-full hover:bg-zinc-100">
-                  {/* <img src="https://placehold.co/20x20" alt="More" /> */}
+                <button className="p-2 rounded-full hover:bg-zinc-100" >
                   <span><BsThreeDotsVertical /></span>
                 </button>
               </div>
+              {
+                isPopupVisible && (
+                  <>
+                   <VideoComp 
+                    callUser={callUser}
+                    stream = {stream}
+                    callAccepted={callAccepted}
+                    callEnded={callEnded}
+                    myVideo={myVideo}
+                    userVideo={userVideo}
+                    receivingCall={receivingCall}
+                    answerCall={answerCall}
+                    leaveCall={leaveCall}
+                    name={name}
+                    setName={setName}
+                    idToCall={idToCall}
+                    me={me}
+                    setMe={setMe}
+                    setIdToCall={setIdToCall}
+                    isPopupVisible={isPopupVisible}
+                    setIsPopupVisible={setIsPopupVisible}
+                    />
+                  </>
+                )
+              }
             </div>
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-100">
+            <div className="flex-1 p-4 overflow-y-auto bg-zinc-300" ref={chatContainerRef}>
               <div className='flex justify-center'>
                 <span className="p-2 mb-2 rounded-xl bg-gray-200 text-xs text-zinc-500">Today</span>
               </div>
@@ -96,21 +165,28 @@ export default function ChatBox({ user, roomData,
                       }`}
                   >
                     {message.receiverId == user.id && (
-                      <span className="rounded-full mr-2 bg-gray-200 p-2">
-                        <CiUser />
+                      <span className="rounded-full mr-2 bg-gray-200">
+                        {/* <CiUser /> */}
+                        <img src={Bitmoji1} alt="User" className="rounded-full w-10" />
                       </span>
                     )}
                     <div
-                      className={`relative p-3 rounded-lg ${message.senderId === user.id ? "bg-zinc-200 ml-auto" : "bg-blue-100"
+                      className={`relative p-3 rounded-lg ${message.senderId === user.id ? "bg-zinc-50 ml-auto" : "bg-[#77D098]"
                         }`}
                     >
+                      {message.replyMessage && (
+                        <div className="p-2 border-l-2 border-blue-500 bg-gray-200 rounded ml-2">
+                          <p className="text-sm text-blue-600">{message?.replyMessage}</p>
+                        </div>
+                      )}
                       <p className='max-w-[550px]'>{message.message}</p>
                       <div className="flex justify-between mt-1">
                         <div>
-                          <span className="text-xs text-zinc-500">3:16 PM</span>
+                          {/* <span className="text-xs text-zinc-700">3:16 PM</span> */}
+                          <span className="text-xs text-zinc-700">{formatTimestamp(message.timestamp)}</span>
                         </div>
                         <div className="flex items-center">
-                          <span className="mr-2 text-lg cursor-pointer">
+                          <span className="mr-2 text-lg cursor-pointer" onClick={() => setReplyMessage(message)}>
                             <MdReply />
                           </span>
                           <span className="cursor-pointer hover:text-red-600 text-lg" onClick={() => handleDeleteMessage(message.id)}>
@@ -120,8 +196,10 @@ export default function ChatBox({ user, roomData,
                       </div>
                     </div>
                     {message.senderId === user.id && (
-                      <span className="rounded-full ml-2 bg-gray-200 p-2">
-                        <CiUser />
+                      <span className="rounded-full ml-2 bg-gray-200">
+                        {/* <CiUser /> */}
+                        <img src={Bitmoji2} alt="User" className="rounded-full w-10" />
+
                       </span>
                     )}
                   </div>
@@ -133,11 +211,21 @@ export default function ChatBox({ user, roomData,
                 </div>
               ))}
             </div>
+            {replyMessage && (
+              <div className='flex justify-between items-center border-2 text-sm text-zinc-500'>
+                <div className='w-full p-2'>Replying to: "{replyMessage.message}"</div>
+                <div>
+                  <button className='text-red-400 rounded-lg mr-7 hover:text-red-600' onClick={() => setReplyMessage(null)}><span><ImCross /></span></button>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
               <div className="p-4 bg-white border-t border-zinc-300">
+                {showEmojiPicker && <EmojiPickers onEmojiClick={handleEmojiSelect} />}
                 <div className="flex items-center">
-                  <span className='text-2xl mr-2 cursor-pointer'><MdOutlineEmojiEmotions /></span>
-                  <span className='text-2xl mr-2 cursor-pointer'><IoIosVideocam /></span>
+                  <span className='text-2xl mr-2 cursor-pointer' onClick={handleEmogi}><MdOutlineEmojiEmotions /></span>
+                  <span className='text-2xl mr-2 cursor-pointer' ><IoIosVideocam /></span>
                   <span className='text-2xl mr-2 cursor-pointer'><FaMicrophone /></span>
                   <input type="text" placeholder="Type a message"
                     value={message}
@@ -152,7 +240,10 @@ export default function ChatBox({ user, roomData,
         :
         <>
           <div className='w-full flex justify-center items-center text-xl'>
-            Please select user to chat
+            <div className='text-white font-bold'>
+              Please select user to chat
+            </div>
+            <img src={chatUser} className='' />
           </div>
         </>
       }

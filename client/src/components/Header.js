@@ -1,12 +1,18 @@
 import React from 'react'
 import whatsppAvtar from '../assets/whatsapp.jpg';
-import { useNavigate } from'react-router-dom';
-export default function Header({ user }) {
+import { useNavigate } from 'react-router-dom';
+import { ImCross } from "react-icons/im";
+
+
+export default function Header({ user, toggleSidebar, isSidebarOpen }) {
+
     const navigate = useNavigate();
+
     const handleLogout = () => {
         // const logout = sessionStorage.removeItem('token');
         // navigate('/');
     }
+
     return (
         <div class="w-full p-2 bg-blue-600 shadow sm:p-4">
             <div class="flow-root">
@@ -24,9 +30,13 @@ export default function Header({ user }) {
                                     {user.email}
                                 </p>
                             </div>
-                            <div class="text-[12px] bg-black p-1 rounded-lg inline-flex items-center text-base font-semibold text-gray-900 dark:text-white cursor-pointer" onClick={handleLogout}>
-                                Logout
-                            </div>
+                            {
+                                isSidebarOpen && (
+                                    <div className="text-sm text-red-500 bg-white p-2 rounded-md hover:text-red-600 inline-flex items-center cursor-pointer" onClick={toggleSidebar}>
+                                        <ImCross />
+                                    </div>
+                                )
+                            }
                         </div>
                     </li>
                 </ul>

@@ -17,8 +17,10 @@
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mkcert": "^3.2.0",
     "mysql2": "^3.9.9",
     "nodemon": "^3.1.2",
+    "peer": "^1.0.2",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5"
   }

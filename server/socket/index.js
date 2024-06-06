@@ -1,5 +1,7 @@
 const socket = require("socket.io");
 const { saveMessage } = require("../controller/message");
+const { PeerServer } = require('peer');
+
 
 const onlineUsers = [];
 
@@ -25,6 +27,7 @@ const socketInit = (server) => {
             origin: 'http://localhost:3000',
         }
     });
+    const peerServer = PeerServer({ port: 9000, path: '/' });
 
     io.on('connection', (socket) => {
         socket.on('ADD_USER', (user) => {
@@ -32,6 +35,7 @@ const socketInit = (server) => {
             io.emit("USER_ADDED", onlineUsers);
         });
         socket.on('SEND_MESSAGE', async (message) => {
+            console.log("Message received server socket", message);
             const isSaved = await saveMessage(message);
             socket
                 .to(message.receiver.socketId)
@@ -53,7 +57,22 @@ const socketInit = (server) => {
             io.emit("USER_ADDED", onlineUsers);
             socket.broadcast.emit('USER_LEFT', onlineUsers);
         });
+        socket.on('JOIN_ROOM', (roomId, userId) => {
+            socket.join(roomId);
+            socket.to(roomId).broadcast.emit('user-connected', userId);
 
+            socket.on('disconnect', () => {
+                socket.to(roomId).broadcast.emit('user-disconnected', userId);
+            });
+        });
+        socket.emit("me", socket.id)
+        socket.on("callUser", (data) => {
+            io.to(data.userToCall).emit("callUser", { signal: data.signalData, from: data.from, name: data.name })
+        })
+        socket.on("answerCall", (data) => {
+            io.to(data.to).emit("callAccepted", data.signal)
+        })
+          
     });
 }
 

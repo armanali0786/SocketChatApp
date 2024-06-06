@@ -5,6 +5,7 @@ import Login from './auth/Login';
 import Register from './auth/Register';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { isLoggedIn } from './auth/auth';
+import VideoCall from './Chat/VideoCall';
 
 function App() {
   
@@ -12,6 +13,7 @@ function App() {
     <>
         <Routes>
           <Route path="/app" element={<ProtectedRoute element={<ChatApp />} />} />
+          <Route path="/apps" element={<ProtectedRoute element={<VideoCall />} />} />
           <Route path="/" element={isLoggedIn() ? <Navigate to="/app" /> : <Login />} />
           <Route path="/register" element={isLoggedIn() ? <Navigate to="/app" /> : <Register />} />
           <Route path="/login" element={isLoggedIn() ? <Navigate to="/app" /> : <Login />} />

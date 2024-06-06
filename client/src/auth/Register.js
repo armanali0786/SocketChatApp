@@ -5,13 +5,16 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import ChatICon1 from '../assets/chat-icon1.png'
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 export default function Register() {
 
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
 
     const initialValues = {
-        name:'',
+        name: '',
         email: '',
         password: '',
         phoneno: '',
@@ -63,76 +66,55 @@ export default function Register() {
     };
 
     /*********Password Hide and show*******************/
-    // const togglePasswordVisibility = () => {
-    //     setShowPassword(!showPassword);
-    // };
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     return (
         <>
             <ToastContainer />
-            <div className='bg-gray-50 dark:bg-gray-200 min-h-screen'>
-                <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+            <div class="min-h-screen flex items-center justify-center bg-zinc-100 ">
+                <div class=" flex flex-col md:flex-row max-w-4xl w-full p-6 md:p-12">
+                    <div class="flex-1 flex items-center justify-center">
+                        <img src={ChatICon1} alt="Illustration" class="w-full h-auto" />
+                    </div>
                     <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
                         {({ isSubmitting }) => (
-                            <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-900 dark:border-gray-700">
-                                <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                                    <h1 className='text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white'>Register Page</h1>
-                                    <Form className="space-y-4 md:space-y-6">
-                                    <div>
-                                            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your name</label>
-                                            <Field 
-                                                type="text" 
-                                                name="name" 
-                                                id="name" 
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                                                placeholder="Daniel" 
-                                                required=""
-                                             />
-                                            <ErrorMessage name="name" component="span" className="super text-red-700" />
-                                        </div>
-                                        <div>
-                                            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                                            <Field 
-                                                type="email" 
-                                                name="email" 
-                                                id="email" 
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                                                placeholder="name@gmail.com" 
-                                                required=""
-                                             />
-                                            <ErrorMessage name="email" component="span" className="super text-red-700" />
-                                        </div>
-                                        <div>
-                                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                                            <Field
-                                                type="password"
-                                                name="password"
-                                                id="password"
-                                                placeholder="••••••••"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                required="" 
-                                            />
-                                            <ErrorMessage name="password" component="span" className="super text-red-700" />
-                                        </div>
-                                        <div>
-                                            <label for="text" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number</label>
-                                            <Field
-                                                type="text"
-                                                name="phoneno"
-                                                id="phoneno"
-                                                placeholder="73****"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                required="" 
-                                            />
-                                            <ErrorMessage name="phoneno" component="span" className="super text-red-700" />
-                                        </div>
-                                       
-                                        <button type="submit" class="w-full text-white bg-sky-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Register</button>
-                                        <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                                          Already account? <Link to="/" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login</Link>
-                                        </p>
-                                    </Form>
-                                </div>
+                            <div class="flex-1 mt-6 md:mt-0 md:ml-6">
+                                <h2 class="text-3xl font-bold mb-6 text-zinc-900 dark:text-zinc-700">Sign<span class="text-green-500">Up</span></h2>
+                                <Form>
+                                    <div class="mb-4">
+                                        <label for="email" class="block text-sm font-medium text-zinc-700 dark:text-zinc-700">Full Name</label>
+                                        <Field type="text" id="name" name="name" class="mt-1 block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm  dark:text-zinc-700" placeholder="Enter Your Name" />
+                                        <ErrorMessage name="name" component="span" className="super text-sm text-red-500" />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="email" class="block text-sm font-medium text-zinc-700 dark:text-zinc-700">Email</label>
+                                        <Field type="email" id="email" name="email" class="mt-1 block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm  dark:text-zinc-700" placeholder="arman@gmail.com" />
+                                        <ErrorMessage name="email" component="span" className="super text-sm text-red-500" />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="phoneno" class="block text-sm font-medium text-zinc-700 dark:text-zinc-700">Mobile No</label>
+                                        <Field type="number" id="phoneno" name="phoneno" class="mt-1 block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm  dark:text-zinc-700" placeholder="Enter Your Name" />
+                                        <ErrorMessage name="phoneno" component="span" className="super text-sm text-red-500" />
+                                    </div>
+                                    <div class="mb-4 relative">
+                                        <label for="password" class="block text-sm font-medium text-zinc-700 dark:text-zinc-700">Password</label>
+                                        <Field type={showPassword ? "text" : "password"} id="password" name="password" class="mt-1 block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm  dark:text-zinc-700" placeholder="Enter your password" />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 top-0 pr-3 flex items-center text-sm leading-5"
+                                            onClick={togglePasswordVisibility}
+                                        >
+                                            {showPassword ? <FaEye /> : <FaEyeSlash />}
+                                        </button>
+                                        <ErrorMessage name="password" component="span" className="super text-sm text-red-600" />
+                                    </div>
+                                    <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">SignUp</button>
+                                </Form>
+                                <p class="text-sm font-light text-black dark:text-black mt-1">
+                                   Already Account? <Link to="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login</Link>
+                                </p>
                             </div>
                         )}
                     </Formik>

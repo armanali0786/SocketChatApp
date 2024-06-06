@@ -1,24 +1,27 @@
 const Message = require('../models/message');
+const { Op } = require('sequelize');
 
-const saveMessage = (data) =>{
-    try{
-        const savedMessage = Message.create({
-            message: data.message,
-            senderId: data.sender.id,
-            receiverId: data.receiver.id,
-            // message :"Message saved in Database"
-        })
-        return savedMessage;
-        // return res.status(200).json({
-        //     message: "Message saved in Database",
-        //     data: savedMessage,
-        // })
-    }catch(error){
-        console.log(error);
-        // return res.status(500).json({ error: 'An error occurred while saving the message' });
+const saveMessage = async (data) => {
+  try {
+    const newMessageData = {
+      message: data.message,
+      senderId: data.sender.id,
+      receiverId: data.receiver.id,
+      timestamp: new Date(),
+    };
+
+    if (data.replyMessage) {
+      newMessageData.replyMessage = data.replyMessage.message;
     }
- 
-}
+    console.log("new messages to controller",newMessageData);
+    const savedMessage = await Message.create(newMessageData);
+    return savedMessage.toJSON();
+  } catch (error) {
+    console.log(error);
+    // return res.status(500).json({ error: 'An error occurred while saving the message' });
+  }
+};
+
 
 const getMessage = async(req, res) =>{
     const {id} = req.params;
@@ -29,10 +32,17 @@ const getMessage = async(req, res) =>{
             })
         }
         const allMessages = await Message.findAll({
-            $or:[{
-                "senderId": id,
-                "receiverId":id
-            }]
+            // $or:[{
+            //     "senderId": id,
+            //     "receiverId":id
+            // }]
+            where: {
+                [Op.or]: [
+                    { senderId: id },
+                    { receiverId: id }
+                ]
+            },
+            attributes: ['id', 'message', 'senderId', 'receiverId', 'replyMessage', 'timestamp']// Include timestamp in the response
         })
         return res.status(200).json({
             data: allMessages,
