@@ -26,10 +26,9 @@ Emogi Expression:-
 
 ![Screenshot from 2024-06-03 16-38-35](https://github.com/armanali0786/SocketChatApp/assets/76746226/5de47296-a158-4e35-bd4b-21734ff0aaeb)
 
-![Screenshot from 2024-06-05 13-13-01](https://github.com/armanali0786/SocketChatApp/assets/76746226/be07f31a-cb95-4cb5-8cee-7b6806d52ac4)
-
 ![Screenshot from 2024-06-07 15-17-03](https://github.com/armanali0786/SocketChatApp/assets/76746226/626bacfb-b8e1-4daf-b95c-af9588948d49)
 
+![Screenshot from 2024-06-05 13-13-01](https://github.com/armanali0786/SocketChatApp/assets/76746226/be07f31a-cb95-4cb5-8cee-7b6806d52ac4)
 
 ![Screenshot from 2024-06-05 13-13-06](https://github.com/armanali0786/SocketChatApp/assets/76746226/1dda37d2-6d37-430a-884f-4b6dbdd9770d)
 
