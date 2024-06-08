@@ -1,15 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
-import Sidebar from '../components/Sidebar'
-import ChatBox from '../components/ChatBox'
-import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useRef, useState } from 'react';
+import Sidebar from '../components/Sidebar';
+import ChatBox from '../components/ChatBox';
+import {jwtDecode} from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
-import NewSidebar from '../components/NewSidebar';
-import Peer from 'peerjs';
+import Peer from 'simple-peer';
 
 const PATH = 'http://localhost:5000';
-
 
 export default function ChatApp() {
   const navigate = useNavigate();
@@ -19,21 +17,23 @@ export default function ChatApp() {
   const [typingUsers, setTypingUsers] = useState([]);
   const [replyMessage, setReplyMessage] = useState(null);
 
-  const [ me, setMe ] = useState("")
-	const [ stream, setStream ] = useState()
-	const [ receivingCall, setReceivingCall ] = useState(false)
-	const [ caller, setCaller ] = useState("")
-	const [ callerSignal, setCallerSignal ] = useState()
-	const [ callAccepted, setCallAccepted ] = useState(false)
-	const [ idToCall, setIdToCall ] = useState("")
-	const [ callEnded, setCallEnded] = useState(false)
-	const [ name, setName ] = useState("")
-	const myVideo = useRef()
-	const userVideo = useRef()
-	const connectionRef= useRef()
+  const [me, setMe] = useState("");
+  const [stream, setStream] = useState();
+  const [receivingCall, setReceivingCall] = useState(false);
+  const [caller, setCaller] = useState("");
+  const [callerSignal, setCallerSignal] = useState();
+  const [callAccepted, setCallAccepted] = useState(false);
+  const [idToCall, setIdToCall] = useState("");
+  const [callEnded, setCallEnded] = useState(false);
+  const [name, setName] = useState("");
+  const myVideo = useRef(null); // Ensure the ref is initialized with null
+  const userVideo = useRef(null); // Ensure the ref is initialized with null
+  
+  const connectionRef = useRef();
+  const peerRef = useRef();
 
-
-
+  const myAudio = useRef();
+  const userAudio = useRef();
 
   const [roomData, setRoomData] = useState({
     room: null,
@@ -52,7 +52,6 @@ export default function ChatApp() {
   const user = jwtDecode(token);
 
   useEffect(() => {
-
     const socket = io.connect(PATH);
     socketRef.current = socket;
 
@@ -60,13 +59,23 @@ export default function ChatApp() {
       setIsConnected(true);
     });
 
-  
     socket.on('disconnect', () => {
       setIsConnected(false);
       console.log('Disconnected');
     });
-    // Cleanup on component unmount
-   
+
+    socket.on("me", (id) => {
+      setMe(id);
+    });
+
+    socket.on("callUser", (data) => {
+      setReceivingCall(true);
+      setCaller(data.from);
+      setName(data.name);
+      setCallerSignal(data.signal);
+      console.log("call user data", data);
+    });
+
     return () => {
       socket.off('connect');
       socket.off('disconnect');
@@ -76,12 +85,12 @@ export default function ChatApp() {
 
   }, []);
 
-
   useEffect(() => {
     if (isConnected) {
       socketRef.current.emit('ADD_USER', user);
       socketRef.current.on('USER_ADDED', (data) => {
         setOnlineUsers(data);
+        console.log("Data ", data);
       });
 
       socketRef.current.on('RECEIVE_MESSAGE', (data) => {
@@ -108,12 +117,14 @@ export default function ChatApp() {
         setOnlineUsers(data);
       });
 
-      return () => socketRef.current.disconnect();
+      socketRef.current.on("callAccepted", (signal) => {
+        setCallAccepted(true);
+        peerRef.current.signal(signal);
+      });
 
+      return () => socketRef.current.disconnect();
     }
   }, [isConnected]);
-
-
 
   const handleSendMessage = (message) => {
     if (socketRef.current.connected) {
@@ -125,14 +136,14 @@ export default function ChatApp() {
         receiver: roomData.receiver,
         sender: sender,
         timestamp: timestamp,
-      }
+      };
       if (replyMessage) {
         data.replyMessage = replyMessage;
       }
       socketRef.current.emit('SEND_MESSAGE', data);
       setMessageData((prevState) => [...prevState, data]);
     }
-  }
+  };
 
   const handleDeleteMessage = (messageId) => {
     axios.delete(`http://localhost:5000/api/${messageId}`)
@@ -141,14 +152,14 @@ export default function ChatApp() {
           const data = {
             message: res.data.data,
             receiver: roomData.receiver,
-          }
+          };
           socketRef.current.emit('DELETE_MESSAGE', data);
-          setMessageData((prevState) => prevState.filter((data) => data.id != res.data.data.id));
+          setMessageData((prevState) => prevState.filter((data) => data.id !== res.data.data.id));
         }
       }).catch((error) => {
-        console.log(error)
+        console.log(error);
       });
-  }
+  };
 
   const handleTyping = () => {
     socketRef.current.emit('TYPING', user);
@@ -158,81 +169,77 @@ export default function ChatApp() {
     socketRef.current.emit('STOP_TYPING', user);
   };
 
-
   
-	useEffect(() => {
-		navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-			setStream(stream)
-			if (myVideo.current) {
-				myVideo.current.srcObject = stream
-			}
-		})
-		socketRef.current.on("me", (id) => {
-			setMe(id)
-			console.log("Me id",id);
-		})
-		socketRef.current.on("callUser", (data) => {
-			console.log("call user data asjknsdnjksn", data);
-			setReceivingCall(true)
-			setCaller(data.from)
-			setName(data.name)
-			setCallerSignal(data.signal)
-		})
-	}, [])
-
-	const callUser = (id) => {
-		console.log("Id inside call function", id)
-		const peer = new Peer({
-			initiator: true,
-			trickle: false,
-			stream: stream
-		})
-		peer.on("signal", (data) => {
-			socketRef.current.emit("callUser", {
-				userToCall: id,
-				signalData: data,
-				from: me,
-				name: name
-			})
-		})
-		peer.on("stream", (stream) => {
-			if (userVideo.current) {
-				userVideo.current.srcObject = stream
-			}
-		})
-		socketRef.current.on("callAccepted", (signal) => {
-			setCallAccepted(true)
-			peer.signal(signal)
-		})
-
-		connectionRef.current = peer
-	}
-
-	const answerCall = () => {
-		setCallAccepted(true)
-		const peer = new Peer({
-			initiator: false,
-			trickle: false,
-			stream: stream
-		})
-		peer.on("signal", (data) => {
-			socketRef.current.emit("answerCall", { signal: data, to: caller })
-		})
-		peer.on("stream", (stream) => {
-			if (userVideo.current) {
-				userVideo.current.srcObject = stream
-			}
-		})
-
-		peer.signal(callerSignal)
-		connectionRef.current = peer
-	}
-
-	const leaveCall = () => {
-		setCallEnded(true)
-		connectionRef.current.destroy()
-	}
-
+  const callUser = (id) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+      setStream(stream);
+      if (myVideo.current) {
+        myVideo.current.srcObject = stream;
+      }
+      const peer = new Peer({
+        initiator: true,
+        trickle: false,
+        stream: stream,
+      });
+  
+      peer.on("signal", (data) => {
+        socketRef.current.emit("callUser", {
+          userToCall: id,
+          signalData: data,
+          from: me,
+          name: name,
+        });
+      });
+  
+      peer.on("stream", (userStream) => {
+        if (userVideo.current) {
+          userVideo.current.srcObject = userStream;
+        }
+      });
+  
+      peerRef.current = peer;
+      connectionRef.current = peer;
+    }).catch((err) => {
+      console.error("Error accessing media devices:", err);
+    });
+  };
+  
+  const answerCall = () => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+      setStream(stream);
+      if (myVideo.current) {
+        myVideo.current.srcObject = stream;
+      }
+      const peer = new Peer({
+        initiator: false,
+        trickle: false,
+        stream: stream,
+      });
+  
+      peer.on("signal", (data) => {
+        socketRef.current.emit("answerCall", { signal: data, to: caller });
+      });
+  
+      peer.on("stream", (userStream) => {
+        if (userVideo.current) {
+          userVideo.current.srcObject = userStream;
+        }
+      });
+  
+      peer.signal(callerSignal);
+      peerRef.current = peer;
+      connectionRef.current = peer;
+      setCallAccepted(true);
+    }).catch((err) => {
+      console.error("Error accessing media devices:", err);
+    });
+  };
+  
+  const leaveCall = () => {
+    setCallEnded(true);
+    connectionRef.current.destroy();
+    setStream(null);
+  };
 
   return (
     <div className='flex'>
@@ -259,7 +266,7 @@ export default function ChatApp() {
         setReplyMessage={setReplyMessage}
         replyMessage={replyMessage}
         callUser={callUser}
-        stream = {stream}
+        stream={stream}
         callAccepted={callAccepted}
         callEnded={callEnded}
         myVideo={myVideo}
@@ -273,8 +280,9 @@ export default function ChatApp() {
         me={me}
         setMe={setMe}
         setIdToCall={setIdToCall}
+        myAudio={myAudio}
+        userAudio={userAudio}
       />
-
     </div>
-  )
+  );
 }

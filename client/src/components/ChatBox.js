@@ -9,26 +9,26 @@ import Bitmoji from '../assets/bitmoji.jpg';
 import Bitmoji1 from '../assets/bitmoji1.jpg';
 import Bitmoji2 from '../assets/bitmoji2.png';
 import chatUser from '../assets/chat.png';
-import { CopyToClipboard } from "react-copy-to-clipboard"
 
-import Peer from 'peerjs';
 
 import EmojiPickers from 'emoji-picker-react';
 import VideoComp from './VideoComp';
+import AudioComp from './AudioComp';
 
 export default function ChatBox({ user, roomData,
   handleSendMessage, messageData,
   handleDeleteMessage, handleTyping,
-  handleStopTyping, typingUsers, setReplyMessage, 
-  replyMessage,callUser,stream, callEnded, userVideo,
-   myVideo, callAccepted, receivingCall, answerCall,
-  leaveCall,name, setName, idToCall, me, setMe, setIdToCall
+  handleStopTyping, typingUsers, setReplyMessage,
+  replyMessage, callUser, stream, callEnded, userVideo,
+  myVideo, callAccepted, receivingCall, answerCall,
+  leaveCall, name, setName, idToCall, me, setMe, setIdToCall, userAudio, myAudio
 }) {
   const [message, setMessage] = useState('');
   const typingRef = useRef(false);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [isPopupAudio, setIsAudioPopup] = useState(false);
 
 
   const chatContainerRef = useRef(null);
@@ -70,7 +70,8 @@ export default function ChatBox({ user, roomData,
     typingRef.current = false;
   }
 
-  const handleVideoCallUser = () => {
+  const handleVideoCallUser = (idToCall) => {
+    callUser(idToCall)
     setIsPopupVisible(true);
   }
 
@@ -100,6 +101,16 @@ export default function ChatBox({ user, roomData,
   }, [messageData]);
 
 
+  const handleAudioCallUser = () => {
+    setIsAudioPopup(!isPopupAudio);
+  }
+
+  useEffect(() => {
+    if (receivingCall && !callAccepted) {
+      setIsPopupVisible(true);
+    }
+  }, [receivingCall, callAccepted]);
+
   return (
     <>
       {roomData.room ?
@@ -113,13 +124,23 @@ export default function ChatBox({ user, roomData,
                   <p className="font-semibold">{roomData.receiver.name}</p>
                   <p className="text-sm text-zinc-500">Active Now</p>
                 </div>
+                <div>
+                  {receivingCall && !callAccepted ? (
+                    <div className="bg-white p-2">
+                      <h1 className=" text-green-500">{name} is calling...</h1>
+                      <button className=" text-green-500" variant="contained" color="primary" onClick={answerCall}>
+                        Answer
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div className="flex items-center space-x-4">
-                <button className="p-2 rounded-full hover:bg-zinc-100">
+                <button className="p-2 rounded-full hover:bg-zinc-100" onClick={() => handleAudioCallUser(roomData.receiver.socketId)}>
                   <span><IoIosCall /></span>
                 </button>
                 <button className="p-2 rounded-full hover:bg-zinc-100"
-                  onClick={handleVideoCallUser}
+                  onClick={() => handleVideoCallUser(roomData.receiver.socketId)}
                 >
                   <span><FaVideo /></span>
                 </button>
@@ -130,24 +151,48 @@ export default function ChatBox({ user, roomData,
               {
                 isPopupVisible && (
                   <>
-                   <VideoComp 
-                    callUser={callUser}
-                    stream = {stream}
-                    callAccepted={callAccepted}
-                    callEnded={callEnded}
-                    myVideo={myVideo}
-                    userVideo={userVideo}
-                    receivingCall={receivingCall}
-                    answerCall={answerCall}
-                    leaveCall={leaveCall}
-                    name={name}
-                    setName={setName}
-                    idToCall={idToCall}
-                    me={me}
-                    setMe={setMe}
-                    setIdToCall={setIdToCall}
-                    isPopupVisible={isPopupVisible}
-                    setIsPopupVisible={setIsPopupVisible}
+                    <VideoComp
+                      callUser={callUser}
+                      stream={stream} 
+                      callAccepted={callAccepted}
+                      callEnded={callEnded}
+                      myVideo={myVideo}
+                      userVideo={userVideo}
+                      receivingCall={receivingCall}
+                      answerCall={answerCall}
+                      leaveCall={leaveCall}
+                      name={roomData.receiver.name}
+                      setName={setName}
+                      idToCall={idToCall}
+                      setIdToCall={setIdToCall}
+                      isPopupVisible={isPopupVisible}
+                      setIsPopupVisible={setIsPopupVisible}
+                    />
+                  </>
+                )
+              }
+
+              {
+                isPopupAudio && (
+                  <>
+                    <AudioComp
+                      callUser={callUser}
+                      stream={stream}
+                      callAccepted={callAccepted}
+                      callEnded={callEnded}
+                      myVideo={myVideo}
+                      userVideo={userVideo}
+                      receivingCall={receivingCall}
+                      answerCall={answerCall}
+                      leaveCall={leaveCall}
+                      name={name}
+                      setName={setName}
+                      idToCall={idToCall}
+                      setIdToCall={setIdToCall}
+                      isPopupAudio={isPopupAudio}
+                      setIsAudioPopup={setIsAudioPopup}
+                      userAudio={userAudio}
+                      myAudio={myAudio}
                     />
                   </>
                 )
@@ -155,7 +200,7 @@ export default function ChatBox({ user, roomData,
             </div>
             <div className="flex-1 p-4 overflow-y-auto bg-zinc-300" ref={chatContainerRef}>
               <div className='flex justify-center'>
-                <span className="p-2 mb-2 rounded-xl bg-gray-200 text-xs text-zinc-500">Today</span>
+                <span className="p-2 mb-2 rounded-xl bg-gray-200 text-xs text-zinc-500">Today{roomData.receiver.socketId} </span>
               </div>
               {
                 messageData.map((message, index) => (

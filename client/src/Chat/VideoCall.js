@@ -1,104 +1,3 @@
-// import React, { useRef, useState, useEffect } from 'react';
-// import  ReactPlayer  from 'react-player';
-// import Peer from 'peerjs';
-// import SimplePeer from 'simple-peer';
-// import io from 'socket.io-client';
-
-// export default function VideoCall() {
-//   const videoRef = useRef(null);
-//   const audioRef = useRef(null);
-//   const [peerId, setPeerId] = useState(null);
-//   const [roomId, setRoomId] = useState(null); // Optional for room-based calls
-//   const [connectedPeerId, setConnectedPeerId] = useState(null);
-
-//   useEffect(() => {
-//     const peer = new Peer({ /* options */ }); // Configure PeerJS options if needed
-//     peer.on('open', (id) => setPeerId(id));
-//     peer.on('error', (err) => console.error('PeerJS error:', err));
-
-//     return () => peer.destroy(); // Cleanup PeerJS on component unmount
-//   }, []);
-
-//   const startVideoCall = async () => {
-//     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-//     handleVideoStream(stream);
-//     handleAudioStream(stream);
-
-//     const callPeer = (remotePeerId) => {
-//     const peer = new Peer({ /* options */ }); // Configure PeerJS options if needed
-//       const call = peer.call(remotePeerId, stream);
-//       call.on('stream', (receivedStream) => {
-//         handleVideoStream(receivedStream);
-//       });
-//       call.on('close', () => setConnectedPeerId(null));
-//     };
-
-//     if (roomId) {
-//       // Room-based call:
-//       const socket = io('http://localhost:5000'); // Replace with your server address
-//       socket.on('connect', () => {
-//         socket.emit('JOIN_ROOM', roomId);
-//         socket.on('USER_ADDED', (remotePeerId) => {
-//           callPeer(remotePeerId);
-//           setConnectedPeerId(remotePeerId);
-//         });
-//       });
-//     } else {
-//       // One-to-one call:
-//       // Share your peer ID with the other user for connection
-//     }
-//   };
-
-//   const joinVideoCall = async (remotePeerId) => {
-//     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-//     handleVideoStream(stream);
-//     handleAudioStream(stream);
-
-//     const call = new SimplePeer({ initiator: false, trickle: false, stream });
-//     call.on('signal', (data) => {
-//       // Send the signal data to the other user to establish connection
-//     });
-//     call.on('stream', (receivedStream) => {
-//       handleVideoStream(receivedStream);
-//     });
-//     call.signal(remotePeerId); // Replace with received signal data
-//     setConnectedPeerId(remotePeerId);
-//   };
-
-//   const endVideoCall = async () => {
-//     if (connectedPeerId) {
-//       const peer = new Peer({ /* options */ }); // Create a new Peer for ending call
-//       peer.on('open', (id) => peer.destroy()); // Immediately destroy the Peer
-//     }
-//   };
-
-//   const handleVideoStream = (stream) => {
-//     videoRef.current.srcObject = stream;
-//   };
-
-//   const handleAudioStream = (stream) => {
-//     audioRef.current.srcObject = stream;
-//   };
-//   return (
-//     <div>
-//     <ReactPlayer ref={videoRef} />
-//     <audio ref={audioRef} autoPlay />
-//     <button onClick={startVideoCall}>Start Video Call</button> <br/>
-//     {roomId ? (
-//       <button disabled={connectedPeerId}>Join Call</button> 
-//     ) : (
-//       <button onClick={() => joinVideoCall(/* remote peer ID */)}>Join Video Call</button>
-//     )}
-//     <button onClick={endVideoCall}>End Video Call</button>
-//   </div>
-//   )
-// }
-
-// import Button from "@material-ui/core/Button"
-// import IconButton from "@material-ui/core/IconButton"
-// import TextField from "@material-ui/core/TextField"
-// import AssignmentIcon from "@material-ui/icons/Assignment"
-// import PhoneIcon from "@material-ui/icons/Phone"
 
 
 import React, { useEffect, useRef, useState } from "react"
@@ -107,22 +6,25 @@ import Peer from "simple-peer"
 import io from "socket.io-client"
 import '../style/style.css'
 import { FaVideo } from "react-icons/fa"
+import Bitmoji2 from '../assets/bitmoji2.png';
+import Bitmoji1 from '../assets/bitmoji1.jpg';
+
 
 const socket = io.connect('http://localhost:5000')
 function App() {
 
-	const [ me, setMe ] = useState("")
-	const [ stream, setStream ] = useState()
-	const [ receivingCall, setReceivingCall ] = useState(false)
-	const [ caller, setCaller ] = useState("")
-	const [ callerSignal, setCallerSignal ] = useState()
-	const [ callAccepted, setCallAccepted ] = useState(false)
-	const [ idToCall, setIdToCall ] = useState("")
-	const [ callEnded, setCallEnded] = useState(false)
-	const [ name, setName ] = useState("")
+	const [me, setMe] = useState("")
+	const [stream, setStream] = useState()
+	const [receivingCall, setReceivingCall] = useState(false)
+	const [caller, setCaller] = useState("")
+	const [callerSignal, setCallerSignal] = useState()
+	const [callAccepted, setCallAccepted] = useState(false)
+	const [idToCall, setIdToCall] = useState("")
+	const [callEnded, setCallEnded] = useState(false)
+	const [name, setName] = useState("")
 	const myVideo = useRef()
 	const userVideo = useRef()
-	const connectionRef= useRef()
+	const connectionRef = useRef()
 
 
 	useEffect(() => {
@@ -134,7 +36,7 @@ function App() {
 		})
 		socket.on("me", (id) => {
 			setMe(id)
-			console.log("Me id",id);
+			console.log("Me id", id);
 		})
 		socket.on("callUser", (data) => {
 			console.log("call user data asjknsdnjksn", data);
@@ -200,32 +102,45 @@ function App() {
 
 	return (
 		<>
-			<h1 style={{ textAlign: "center", color: '#fff' }}>Arman</h1>
-			<div className="container bg-gray-300 relative min-h-screen">
-				<div className="video-container">
-					<div className="video absolute top-5">
-						{stream && <video playsInline muted ref={myVideo} autoPlay style={{ width: "300px" }} />}
+			<div className="flex flex-col h-screen">
+
+				<div className="flex items-center justify-between p-4 bg-white dark:bg-zinc-800 shadow-md">
+					<div className="flex items-center space-x-2">
+						<img src={Bitmoji2} alt="Logo" className="w-8 h-8" />
+						<span className="text-lg font-semibold text-zinc-800 dark:text-white">Arman</span>
 					</div>
-					<div className="video  absolute top-5 right-10">
-						{callAccepted && !callEnded ?
-							<video playsInline ref={userVideo} autoPlay style={{ width: "300px" }} /> :
-							null}
+					<div className="flex items-center space-x-4">
+						<button className="text-zinc-600 dark:text-zinc-300">
+							<img src={Bitmoji1} alt="Full screen" className="w-6 h-6" />
+						</button>
 					</div>
 				</div>
-				<div className="myId">
+
+				<div className="flex flex-1 overflow-hidden">
+
+					<div className="flex flex-1 flex-col md:flex-row p-4 space-y-4 md:space-y-0 md:space-x-4">
+						<div className="flex-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden">
+							{stream && <video playsInline muted ref={myVideo} autoPlay className="w-full h-full object-cover" />}
+							<div className="absolute  left-4 bg-zinc-800 text-white px-2 py-1 rounded-lg">Arman</div>
+						</div>
+						<div className="flex-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden">
+							{callAccepted && !callEnded ?
+								<video playsInline ref={userVideo} autoPlay className="w-full h-full object-cover" /> :
+								null}
+							<div className="absolute bottom-[110px] right-0 bg-zinc-800 text-white px-2 py-1 rounded-lg">{name}</div>
+						</div>
+					</div>
+				</div>
+				<div className="flex justify-center mb-5">
+					<label>Enter name:</label>
 					<input
 						id="filled-basic"
 						label="Name"
 						variant="filled"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
-						style={{ marginBottom: "20px" }}
 					/>
-					<CopyToClipboard text={me} style={{ marginBottom: "2rem" }}>
-						<button variant="contained" color="primary">
-							Copy ID
-						</button>
-					</CopyToClipboard>
+					<label>Enter Id : </label>
 
 					<input
 						id="filled-basic"
@@ -234,29 +149,26 @@ function App() {
 						value={idToCall}
 						onChange={(e) => setIdToCall(e.target.value)}
 					/>
-					<div className="call-button">
-						{callAccepted && !callEnded ? (
-							<button variant="contained" color="secondary" onClick={leaveCall}>
-								End Call
-							</button>
-						) : (
-							<button color="primary" aria-label="call" onClick={() => callUser(idToCall)}>
-								<FaVideo fontSize="large" />
-							</button>
-						)}
-						{idToCall}
+				</div>
+				<div className="flex items-center justify-center p-4 bg-white dark:bg-zinc-800 shadow-md space-x-4">
+					<button className="bg-white p-3 rounded  text-green-500 " onClick={() => callUser(idToCall)}>
+						<FaVideo />
+					</button>
+					<button className="text-red-500 bg-white p-2 rounded" variant="contained" color="secondary" onClick={leaveCall}>
+						End Call
+					</button>
+					<div>
+						{receivingCall && !callAccepted ? (
+							<div className="bg-white p-2">
+								<h1 className=" text-green-500">{name} is calling...</h1>
+								<button className=" text-green-500" variant="contained" color="primary" onClick={answerCall}>
+									Answer
+								</button>
+							</div>
+						) : null}
 					</div>
 				</div>
-				<div>
-					{receivingCall && !callAccepted ? (
-						<div className="caller bg-white p-2">
-							<h1 className=" text-green-500">{name} is calling...</h1>
-							<button className=" text-green-500" variant="contained" color="primary" onClick={answerCall}>
-								Answer
-							</button>
-						</div>
-					) : null}
-				</div>
+
 			</div>
 		</>
 	)
