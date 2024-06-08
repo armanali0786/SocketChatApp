@@ -37,7 +37,6 @@ Emogi Expression:-
 
 [videochat.webm](https://github.com/armanali0786/SocketChatApp/assets/76746226/c2b3fd51-b333-44c1-88d6-60c17f4a8443)
 
-[video-calling.webm](https://github.com/armanali0786/SocketChatApp/assets/76746226/59edf6a6-24ab-4284-b87e-bd5269b13814)
 
 
 ## Acknowledgements
