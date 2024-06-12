@@ -1,19 +1,20 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { CopyToClipboard } from "react-copy-to-clipboard"
-import { FaPhone } from "react-icons/fa6";
-import { FaVideo, FaMicrophoneAlt } from "react-icons/fa"
+import { FaPhone , FaVideoSlash} from "react-icons/fa6";
+import { FaVideo, FaMicrophoneAlt,FaMicrophoneSlash } from "react-icons/fa"
 import Bitmoji2 from '../assets/bitmoji2.png';
 import Bitmoji1 from '../assets/bitmoji1.jpg';
 
 
 export default function VideoComp({ isPopupVisible, setIsPopupVisible, callUser,
     stream, callEnded, userVideo, myVideo, callAccepted, receivingCall, answerCall, leaveCall,
-    name, setName, idToCall, setIdToCall }) {
+    name, setName, idToCall, setIdToCall, toggleAudio, toggleVideo, isAudioMuted, isVideoMuted
+ }) {
 
-    console.log("Stream:", stream);
     if (stream && myVideo.current) {
         myVideo.current.srcObject = stream;
     }
+ 
 
     return (
         <>
@@ -37,25 +38,10 @@ export default function VideoComp({ isPopupVisible, setIsPopupVisible, callUser,
                                     </button>
                                 </div>
                             </div>
-
-                            {/* <div className="flex flex-1 overflow-hidden">
-                                <div className="flex flex-1 flex-col md:flex-row p-4 space-y-4 md:space-y-0 md:space-x-4">
-                                    <div className="flex-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden">
-                                        {stream && <video playsInline muted ref={myVideo} autoPlay className="w-full h-full object-cover" />}
-                                        <div className="absolute  left-4 bg-zinc-800 text-white px-2 py-1 rounded-lg">Arman</div>
-                                    </div>
-                                    <div className="flex-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden relative">
-                                        {callAccepted && !callEnded ?
-                                            <video playsInline ref={userVideo} autoPlay className="w-full h-full object-cover" /> :
-                                            null}
-                                        <div className="absolute right-0 bottom-0 bg-zinc-800 text-white px-2 py-1 rounded-lg">{name}</div>
-                                    </div>
-                                </div>
-                            </div> */}
                             <div className="flex flex-1 overflow-hidden">
                                 <div className="flex flex-1 flex-col md:flex-row p-4 space-y-4 md:space-y-0 md:space-x-4">
                                     <div className="flex-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden relative">
-                                        {stream && <video playsInline muted ref={myVideo} autoPlay className="w-full h-full object-cover" />}
+                                        {stream && <video playsInline  ref={myVideo} autoPlay  className="w-full h-full object-cover" />}
                                         <div className="absolute left-4 bottom-4 bg-zinc-800 text-white px-2 py-1 rounded-lg">Arman</div>
                                     </div>
 
@@ -69,11 +55,11 @@ export default function VideoComp({ isPopupVisible, setIsPopupVisible, callUser,
                             </div>
 
                             <div className='flex justify-center items-center p-4'>
-                                <div className='p-2 rounded-lg bg-slate-100 mr-6 text-blue-600 text-lg'>
-                                    <span><FaVideo /></span>
+                                <div className='p-2 rounded-lg bg-slate-100 mr-6 text-blue-600 text-lg' onClick={toggleVideo}>
+                                    <span> {isVideoMuted ?    <FaVideoSlash/> : <FaVideo />} </span>
                                 </div>
-                                <div className='p-2 rounded-lg bg-slate-100 text-red-700 text-lg'>
-                                    <span><FaMicrophoneAlt /></span>
+                                <div className='p-2 rounded-lg bg-slate-100 text-red-700 text-lg' onClick={toggleAudio}>
+                                    <span>{isAudioMuted ?  <FaMicrophoneSlash/> : <FaMicrophoneAlt />}</span>
                                 </div>
                             </div>
 

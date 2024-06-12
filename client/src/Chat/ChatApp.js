@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import ChatBox from '../components/ChatBox';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
@@ -26,14 +26,24 @@ export default function ChatApp() {
   const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("");
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+
   const myVideo = useRef(null); // Ensure the ref is initialized with null
   const userVideo = useRef(null); // Ensure the ref is initialized with null
-  
+
   const connectionRef = useRef();
   const peerRef = useRef();
 
   const myAudio = useRef();
   const userAudio = useRef();
+
+  const mediaRecorderRef = useRef();
+  const audioChunksRef = useRef([]);
 
   const [roomData, setRoomData] = useState({
     room: null,
@@ -73,7 +83,6 @@ export default function ChatApp() {
       setCaller(data.from);
       setName(data.name);
       setCallerSignal(data.signal);
-      console.log("call user data", data);
     });
 
     return () => {
@@ -90,11 +99,12 @@ export default function ChatApp() {
       socketRef.current.emit('ADD_USER', user);
       socketRef.current.on('USER_ADDED', (data) => {
         setOnlineUsers(data);
-        console.log("Data ", data);
       });
 
       socketRef.current.on('RECEIVE_MESSAGE', (data) => {
-        setMessageData((prevState) => [...prevState, data]);
+        // setMessageData((prevState) => [...prevState, data]);
+        setMessageData((prevState) => [...prevState, { ...data, audioUrl: data.audioUrl }]);
+
       });
 
       socketRef.current.on('DELETED_MESSAGE', (data) => {
@@ -122,6 +132,18 @@ export default function ChatApp() {
         peerRef.current.signal(signal);
       });
 
+
+      socketRef.current.on('receiveVoice', (data) => {
+        const audio = new Audio(data);
+        audio.play();
+      });
+
+      socketRef.current.on('RECEIVE_AUDIO_MESSAGE', (audioUrl) => {
+        const audio = new Audio(audioUrl);
+        audio.play();
+      });
+
+
       return () => socketRef.current.disconnect();
     }
   }, [isConnected]);
@@ -139,6 +161,9 @@ export default function ChatApp() {
       };
       if (replyMessage) {
         data.replyMessage = replyMessage;
+      }
+      if (audioUrl) {
+        data.audioUrl = audioUrl;
       }
       socketRef.current.emit('SEND_MESSAGE', data);
       setMessageData((prevState) => [...prevState, data]);
@@ -169,7 +194,7 @@ export default function ChatApp() {
     socketRef.current.emit('STOP_TYPING', user);
   };
 
-  
+
   const callUser = (id) => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       setStream(stream);
@@ -181,7 +206,7 @@ export default function ChatApp() {
         trickle: false,
         stream: stream,
       });
-  
+
       peer.on("signal", (data) => {
         socketRef.current.emit("callUser", {
           userToCall: id,
@@ -190,20 +215,20 @@ export default function ChatApp() {
           name: name,
         });
       });
-  
+
       peer.on("stream", (userStream) => {
         if (userVideo.current) {
           userVideo.current.srcObject = userStream;
         }
       });
-  
+
       peerRef.current = peer;
       connectionRef.current = peer;
     }).catch((err) => {
       console.error("Error accessing media devices:", err);
     });
   };
-  
+
   const answerCall = () => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       setStream(stream);
@@ -215,17 +240,17 @@ export default function ChatApp() {
         trickle: false,
         stream: stream,
       });
-  
+
       peer.on("signal", (data) => {
         socketRef.current.emit("answerCall", { signal: data, to: caller });
       });
-  
+
       peer.on("stream", (userStream) => {
         if (userVideo.current) {
           userVideo.current.srcObject = userStream;
         }
       });
-  
+
       peer.signal(callerSignal);
       peerRef.current = peer;
       connectionRef.current = peer;
@@ -234,11 +259,79 @@ export default function ChatApp() {
       console.error("Error accessing media devices:", err);
     });
   };
-  
+
+  // const leaveCall = () => {
+  //   setCallEnded(true);
+  //   connectionRef.current.destroy();
+  //   setStream(null);
+  // };
+
   const leaveCall = () => {
     setCallEnded(true);
-    connectionRef.current.destroy();
+    // Destroy the peer connection
+    if (connectionRef.current) {
+      connectionRef.current.destroy();
+    }
+    // Stop all media tracks
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    // Reset video elements
+    if (myVideo.current) {
+      myVideo.current.srcObject = null;
+    }
+    if (userVideo.current) {
+      userVideo.current.srcObject = null;
+    }
+    // Reset state
     setStream(null);
+    setReceivingCall(false);
+    setCallAccepted(false);
+    setCaller("");
+    setCallerSignal(null);
+    setIdToCall("");
+  };
+
+  const startRecording = () => {
+    setIsRecording(true);
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+      mediaRecorderRef.current.start();
+    }).catch((err) => {
+      console.error('Error accessing media devices:', err);
+    });
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+    mediaRecorderRef.current.stop();
+    mediaRecorderRef.current.onstop = () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      setAudioUrl(audioUrl);
+      audioChunksRef.current = [];
+    };
+  };
+
+  const toggleAudio = () => {
+    if (stream) {
+      stream.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+      setIsAudioMuted(!isAudioMuted);
+    }
+  };
+
+  const toggleVideo = () => {
+    if (stream) {
+      stream.getVideoTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+      setIsVideoMuted(!isVideoMuted);
+    }
   };
 
   return (
@@ -282,6 +375,15 @@ export default function ChatApp() {
         setIdToCall={setIdToCall}
         myAudio={myAudio}
         userAudio={userAudio}
+        startRecording={startRecording}
+        stopRecording={stopRecording}
+        isRecording={isRecording}
+        audioUrl={audioUrl}
+        setAudioUrl={setAudioUrl}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+        isAudioMuted={isAudioMuted}
+        isVideoMuted={isVideoMuted}
       />
     </div>
   );

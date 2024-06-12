@@ -9,11 +9,12 @@ import Bitmoji from '../assets/bitmoji.jpg';
 import Bitmoji1 from '../assets/bitmoji1.jpg';
 import Bitmoji2 from '../assets/bitmoji2.png';
 import chatUser from '../assets/chat.png';
-
+import ReactAudioPlayer from 'react-audio-player';
 
 import EmojiPickers from 'emoji-picker-react';
 import VideoComp from './VideoComp';
 import AudioComp from './AudioComp';
+import AudioPlayer from './AudioPlayer';
 
 export default function ChatBox({ user, roomData,
   handleSendMessage, messageData,
@@ -21,9 +22,12 @@ export default function ChatBox({ user, roomData,
   handleStopTyping, typingUsers, setReplyMessage,
   replyMessage, callUser, stream, callEnded, userVideo,
   myVideo, callAccepted, receivingCall, answerCall,
-  leaveCall, name, setName, idToCall, me, setMe, setIdToCall, userAudio, myAudio
+  leaveCall, name, setName, idToCall, me, setMe, setIdToCall, userAudio, myAudio,
+  startRecording, isRecording, stopRecording, audioUrl, setAudioUrl, handleSendAudioMessage,
+  toggleAudio, toggleVideo, isAudioMuted, isVideoMuted
 }) {
   const [message, setMessage] = useState('');
+  const [recordingStatus, setRecordingStatus] = useState('');
   const typingRef = useRef(false);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -64,6 +68,10 @@ export default function ChatBox({ user, roomData,
     e.preventDefault();
     if (message) {
       handleSendMessage(message);
+    }
+    else if (audioUrl) {
+      handleSendMessage((prev) => [...prev, audioUrl]);
+      setAudioUrl(null);
     }
     setMessage('');
     handleStopTyping();
@@ -111,6 +119,24 @@ export default function ChatBox({ user, roomData,
     }
   }, [receivingCall, callAccepted]);
 
+  const handleStartRecording = () => {
+    setRecordingStatus('Recording...');
+    startRecording();
+  };
+
+  const handleStopRecording = () => {
+    stopRecording();
+    setRecordingStatus('');
+  };
+
+  const createBlobUrl = (data) => {
+    console.log("audio: ", data)
+    const blob = new Blob([data], { type: 'audio/mpeg' });
+    return URL.createObjectURL(blob);
+  };
+
+  console.log("<Messages Data>", messageData[1])
+
   return (
     <>
       {roomData.room ?
@@ -123,16 +149,6 @@ export default function ChatBox({ user, roomData,
                 <div>
                   <p className="font-semibold">{roomData.receiver.name}</p>
                   <p className="text-sm text-zinc-500">Active Now</p>
-                </div>
-                <div>
-                  {receivingCall && !callAccepted ? (
-                    <div className="bg-white p-2">
-                      <h1 className=" text-green-500">{name} is calling...</h1>
-                      <button className=" text-green-500" variant="contained" color="primary" onClick={answerCall}>
-                        Answer
-                      </button>
-                    </div>
-                  ) : null}
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -153,7 +169,7 @@ export default function ChatBox({ user, roomData,
                   <>
                     <VideoComp
                       callUser={callUser}
-                      stream={stream} 
+                      stream={stream}
                       callAccepted={callAccepted}
                       callEnded={callEnded}
                       myVideo={myVideo}
@@ -167,6 +183,10 @@ export default function ChatBox({ user, roomData,
                       setIdToCall={setIdToCall}
                       isPopupVisible={isPopupVisible}
                       setIsPopupVisible={setIsPopupVisible}
+                      toggleAudio={toggleAudio}
+                      toggleVideo={toggleVideo}
+                      isAudioMuted={isAudioMuted}
+                      isVideoMuted={isVideoMuted}
                     />
                   </>
                 )
@@ -200,7 +220,7 @@ export default function ChatBox({ user, roomData,
             </div>
             <div className="flex-1 p-4 overflow-y-auto bg-zinc-300" ref={chatContainerRef}>
               <div className='flex justify-center'>
-                <span className="p-2 mb-2 rounded-xl bg-gray-200 text-xs text-zinc-500">Today{roomData.receiver.socketId} </span>
+                <span className="p-2 mb-2 rounded-xl bg-gray-200 text-xs text-zinc-500">Today{message.audioUrl}</span>
               </div>
               {
                 messageData.map((message, index) => (
@@ -224,7 +244,17 @@ export default function ChatBox({ user, roomData,
                           <p className="text-sm text-blue-600">{message?.replyMessage}</p>
                         </div>
                       )}
-                      <p className='max-w-[550px]'>{message.message}</p>
+                      {/* <p className='max-w-[550px]'>{message.message}</p> */}
+                      <div className='max-w-[550px]'>
+                        {message.message ? (
+                          <p>{message.message}</p>
+                        ) : (
+                          <audio controls>
+                           <source src={`data:audio/mpeg;base64,${message.audioUrl}`} type="audio/mpeg" />
+                          </audio>
+                        )}
+                      </div>
+
                       <div className="flex justify-between mt-1">
                         <div>
                           {/* <span className="text-xs text-zinc-700">3:16 PM</span> */}
@@ -264,14 +294,21 @@ export default function ChatBox({ user, roomData,
                 </div>
               </div>
             )}
-
+            <div>
+              {recordingStatus && <div className="text-green-500">{recordingStatus}</div>}
+            </div>
+            {audioUrl && (
+              <div>
+                <audio className='w-full' src={audioUrl} controls />
+              </div>
+            )}
             <form onSubmit={handleSubmit}>
               <div className="p-4 bg-white border-t border-zinc-300">
                 {showEmojiPicker && <EmojiPickers onEmojiClick={handleEmojiSelect} />}
                 <div className="flex items-center">
                   <span className='text-2xl mr-2 cursor-pointer' onClick={handleEmogi}><MdOutlineEmojiEmotions /></span>
                   <span className='text-2xl mr-2 cursor-pointer' ><IoIosVideocam /></span>
-                  <span className='text-2xl mr-2 cursor-pointer'><FaMicrophone /></span>
+                  <span className='text-2xl mr-2 cursor-pointer' onClick={isRecording ? handleStopRecording : handleStartRecording}><FaMicrophone /></span>
                   <input type="text" placeholder="Type a message"
                     value={message}
                     onChange={handleMessageInput}

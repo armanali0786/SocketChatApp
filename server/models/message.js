@@ -5,7 +5,11 @@ const User = require('./user'); // Ensure this path is correct
 const Message = sequelize.define('Message', {
   message: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
+  },
+  audioUrl: {
+    type: DataTypes.STRING,
+    allowNull: true, 
   },
   senderId: {
     type: DataTypes.INTEGER,
@@ -26,6 +30,10 @@ const Message = sequelize.define('Message', {
   replyMessage: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  timestamp: {
+    type: DataTypes.DATE,
+    allowNull: false,
   }
 }, {
   tableName: 'messages',

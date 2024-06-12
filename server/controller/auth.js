@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const registerUser = async (req, res) => {
-    console.log("Log Body", req.body);
     try {
       const { name, email, password, phoneno } = req.body;
   

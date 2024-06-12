@@ -30,12 +30,12 @@ const socketInit = (server) => {
     const peerServer = PeerServer({ port: 9000, path: '/' });
 
     io.on('connection', (socket) => {
+
         socket.on('ADD_USER', (user) => {
             addUser(user, socket.id);
             io.emit("USER_ADDED", onlineUsers);
         });
         socket.on('SEND_MESSAGE', async (message) => {
-            console.log("Message received server socket", message);
             const isSaved = await saveMessage(message);
             socket
                 .to(message.receiver.socketId)
@@ -72,7 +72,12 @@ const socketInit = (server) => {
         socket.on("answerCall", (data) => {
             io.to(data.to).emit("callAccepted", data.signal)
         })
-          
+        socket.on('audioStream', (audioData) => {
+            socket.broadcast.emit('audioStream', audioData);
+        });
+        socket.on('SEND_AUDIO_MESSAGE', (data) => {
+            io.to(data.receiver.socketId).emit('RECEIVE_AUDIO_MESSAGE', data.audioUrl);
+        });
     });
 }
 

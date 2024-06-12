@@ -483,3 +483,34 @@ export default function ChatApp() {
   //     console.error("Error accessing media devices:", err); // Added error handling
   //   });
   // };
+
+
+  const leaveCall = () => {
+  setCallEnded(true);
+
+  // Destroy the peer connection
+  if (connectionRef.current) {
+    connectionRef.current.destroy();
+  }
+
+  // Stop all media tracks
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+
+  // Reset video elements
+  if (myVideo.current) {
+    myVideo.current.srcObject = null;
+  }
+  if (userVideo.current) {
+    userVideo.current.srcObject = null;
+  }
+
+  // Reset state
+  setStream(null);
+  setReceivingCall(false);
+  setCallAccepted(false);
+  setCaller("");
+  setCallerSignal(null);
+  setIdToCall("");
+};
